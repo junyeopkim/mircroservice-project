@@ -49,30 +49,29 @@ impl Auth for AuthService {
         let result: Option<String> = self
             .users_service
             .lock()
-            .unwrap()
+            .expect("lock should not be poisoned")
             .get_user_uuid(req.username, req.password);
 
         // Match on `result`. If `result` is `None` return a SignInResponse with a the `status_code` set to `Failure`
         // and `user_uuid`/`session_token` set to empty strings.
-        let user_uuid: String;
-        match result {
-            Some(uuid) => {
-                user_uuid = uuid;
-            }
+        let user_uuid = match result {
+            Some(uuid) => uuid,
             None => {
-                return Ok(Response::new(SignInResponse {
+                let reply = SignInResponse {
                     status_code: StatusCode::Failure.into(),
-                    user_uuid: String::default(),
-                    session_token: String::default(),
-                }))
+                    user_uuid: "".to_owned(),
+                    session_token: "".to_owned(),
+                };
+
+                return Ok(Response::new(reply));
             }
-        }
+        };
 
         // Create new session using `sessions_service`. Panic if the lock is poisoned.
         let session_token: String = self
             .sessions_service
             .lock()
-            .unwrap()
+            .expect("lcok should not be poisoned")
             .create_session(&user_uuid);
 
         // Create a `SignInResponse` with `status_code` set to `Success`
@@ -96,7 +95,7 @@ impl Auth for AuthService {
         let result: Result<(), String> = self
             .users_service
             .lock()
-            .unwrap()
+            .expect("lock should not be poisoned")
             .create_user(req.username, req.password); // Create a new user through `users_service`. Panic if the lock is poisoned.
 
         // Return a `SignUpResponse` with the appropriate `status_code` based on `result`.
@@ -125,7 +124,7 @@ impl Auth for AuthService {
         // Delete session using `sessions_service`.
         self.sessions_service
             .lock()
-            .expect("lock is poisoned")
+            .expect("lock should not be poisoned")
             .delete_session(&req.session_token);
 
         // Create `SignOutResponse` with `status_code` set to `Success`

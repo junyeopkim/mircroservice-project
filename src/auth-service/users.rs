@@ -66,7 +66,7 @@ impl Users for UsersImpl {
         let result = Pbkdf2.verify_password(password.as_bytes(), &parsed_hash);
 
         // If the username and password passed in matches the user's username and password return the user's uuid.
-        if result.is_ok() {
+        if user.username == username && result.is_ok() {
             return Some(user.user_uuid.clone());
         }
 
@@ -75,9 +75,11 @@ impl Users for UsersImpl {
 
     fn delete_user(&mut self, user_uuid: String) {
         // Remove user from `username_to_user` and `uuid_to_user`.
-        self.username_to_user
-            .remove(&self.uuid_to_user[&user_uuid].username);
-        self.uuid_to_user.remove(&user_uuid);
+        if let Some(user) = self.uuid_to_user.get(&user_uuid) {
+            let user_uuid = user.user_uuid.clone();
+            self.username_to_user.remove(&user.username);
+            self.uuid_to_user.remove(&user_uuid);
+        }
     }
 }
 
