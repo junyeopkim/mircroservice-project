@@ -6,7 +6,7 @@ use tokio::time::{sleep, Duration};
 use tonic::{Request, Response};
 use uuid::Uuid;
 
-use crate::authentication::{StatusCode, SignUpResponse, SignInResponse, SignOutResponse};
+use crate::authentication::{SignInResponse, SignOutResponse, SignUpResponse, StatusCode};
 
 pub mod authentication {
     tonic::include_proto!("authentication");
@@ -25,7 +25,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let username: String = Uuid::new_v4().to_string(); // Create random username using new_v4()
         let password: String = Uuid::new_v4().to_string(); // Create random password using new_v4()
 
-        let request: Request<SignUpRequest> = Request::new(SignUpRequest { username: username.clone(), password: password.clone() }); // Create a new `SignUpRequest`.
+        let request: Request<SignUpRequest> = Request::new(SignUpRequest {
+            username: username.clone(),
+            password: password.clone(),
+        }); // Create a new `SignUpRequest`.
 
         let response: Response<SignUpResponse> = client.sign_up(request).await?; // Make a sign up request. Propagate any errors.
 
@@ -37,7 +40,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // ---------------------------------------------
 
-        let request: Request<SignInRequest> = Request::new(SignInRequest { username: username.clone(), password: password.clone() }); // Create a new `SignInRequest`.
+        let request: Request<SignInRequest> = Request::new(SignInRequest {
+            username: username.clone(),
+            password: password.clone(),
+        }); // Create a new `SignInRequest`.
 
         // Make a sign in request. Propagate any errors. Convert Response<SignInResponse> into SignInResponse.
         let response: SignInResponse = client.sign_in(request).await?.into_inner();
@@ -49,7 +55,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // ---------------------------------------------
 
-        let request: Request<SignOutRequest> = Request::new(SignOutRequest { session_token: response.session_token }); // Create a new `SignOutRequest`.
+        let request: Request<SignOutRequest> = Request::new(SignOutRequest {
+            session_token: response.session_token,
+        }); // Create a new `SignOutRequest`.
 
         let response: Response<SignOutResponse> = client.sign_out(request).await?; // Make a sign out request. Propagate any errors.
 
