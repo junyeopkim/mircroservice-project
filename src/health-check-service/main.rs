@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // ---------------------------------------------
 
-        let request: Request<SignOutRequest> = Request::new(SignOutRequest { session_token: "".to_owned() }); // Create a new `SignOutRequest`.
+        let request: Request<SignOutRequest> = Request::new(SignOutRequest { session_token: response.session_token }); // Create a new `SignOutRequest`.
 
         let response: Response<SignOutResponse> = client.sign_out(request).await?; // Make a sign out request. Propagate any errors.
 
